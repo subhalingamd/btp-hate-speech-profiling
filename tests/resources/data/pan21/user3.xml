@@ -1,5 +1,6 @@
 <author lang="en" class="1">
 	<documents>
-		<document><![CDATA[Tweet from #USER#]]></document>
+		<document><![CDATA[#URL# Fr0M #USER#]]></document>
+		<document><![CDATA[#HASHTAG# #HASHTAG#]]></document>
 	</documents>
 </author>

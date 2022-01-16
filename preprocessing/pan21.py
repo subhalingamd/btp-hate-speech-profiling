@@ -10,7 +10,7 @@ def parse_user_file(path):
     texts = [doc.text for doc in root.findall('./documents/document')]
     
     # remove "RT #USER#: " from the beginning of each text
-    texts = [re.sub(r'^RT #USER#: ', '', text) for text in texts]
+    texts = [re.sub(r'^RT #USER#: ', '##RT## ', text) for text in texts]
 
     return texts
 
@@ -26,9 +26,9 @@ def parse_labels_file(path):
 
     return lines
 
-def read_dataset(data_dir):
-    # get gold values from data_dir/labels.txt
-    labels = parse_labels_file(data_dir + '/labels.txt')
+def read_dataset(data_dir, ground_truth='truth.txt'):
+    # get gold values from data_dir/ground_truth
+    labels = parse_labels_file(data_dir + '/' + ground_truth)
 
     # define data: {label: [tweets]}
     data = {}

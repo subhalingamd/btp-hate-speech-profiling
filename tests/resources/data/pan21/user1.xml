@@ -1,7 +1,7 @@
 <author lang="en" class="0">
 	<documents>
 		<document><![CDATA[Tweet 1]]></document>
-		<document><![CDATA[RT #USER#: #USER# Tweet 2 #HASHTAG# #HASHTAG#]]></document>
+		<document><![CDATA[RT #USER#: #USER# Tweet 2 :) #HASHTAG# #HASHTAG#]]></document>
 		<document><![CDATA[#USER#: Tweet 3, #HASHTAG# #URL#]]></document>
 		<document><![CDATA[Tweet 4 RT #USER#: ]]></document>
 	</documents>
