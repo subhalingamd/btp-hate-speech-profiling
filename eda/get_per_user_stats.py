@@ -142,3 +142,14 @@ def get_per_user_named_entities(data, corpora='en_core_web_sm'):
                     out[ent.label_][label][-1] += 1
     print(unk)
     return out
+
+def get_unique_tweets_ratio(data):
+    # given data: {label: [[tweets]]
+    # get ratio of unique tweets for each label
+    # output out: {label: [count]}
+    out = {}
+    for label, users in data.items():
+        out[label] = []
+        for user in users:
+            out[label] += [len(set(user))/len(user)]
+    return out
