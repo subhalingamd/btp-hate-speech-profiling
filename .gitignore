@@ -61,3 +61,7 @@ venv.bak/
 
 # Sublime files
 *.sublime-**
+
+# VS Code files
+.vscode/*
+
