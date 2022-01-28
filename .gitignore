@@ -10,7 +10,9 @@ Thumbs.db
 # ignore data/results
 data**/*
 inp/*
+inputs/*
 out/*
+outputs/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
