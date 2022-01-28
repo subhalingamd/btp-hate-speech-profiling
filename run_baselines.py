@@ -7,7 +7,7 @@ def parse_args():
     parser.add_argument('--lang', type=str, default='en', choices=['en', 'es'], help='en (english) or es (spanish)')
     parser.add_argument('--representation', '-l', type=str, default='tf-idf', choices=['tf-idf'] , help='representation')
     parser.add_argument('--classifier', '-c', type=str, default='lr', choices=['lr'] , help='classifier')
-    parser.add_argument('--output_dir', '-o', type=str, default='outputs/', help='output directory')
+    parser.add_argument('--output_dir', '-o', type=str, default='outputs/baselines/', help='output directory')
     parser.add_argument('--mode', type=str, default='train', choices=['train', 'test'], help='train or test')
     return parser.parse_args()
 
