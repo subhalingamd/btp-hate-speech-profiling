@@ -50,9 +50,9 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
 
 
         parameters.update({
-            'lr__C': [.01, .05, .1, .2, .5, 1, 2, 5, 10, 100, 1000],
+            'lr__C': [.1, .2, .5, 1, 2, 5, 10, 20, 50, 100],
             'lr__penalty': ['l2'], # ['l1', 'l2']
-            'lr__solver': ['liblinear', 'saga'],
+            'lr__solver': ['saga'], # ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga']
         })
         # TODO: try out elasticnet + saga ?
 
