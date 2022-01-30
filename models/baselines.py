@@ -16,9 +16,15 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import StratifiedKFold
 
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
 def save_pickle(obj, filename):
     with open(filename, 'wb') as f:
         pickle.dump(obj, f)
+
+def load_pickle(filename):
+    with open(filename, 'rb') as f:
+        return pickle.load(f)
 
 def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=None):
     rep = rep.lower()
@@ -168,3 +174,55 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
         df['train_scores'] = params_grid.cv_results_['mean_train_score']
         df['test_scores'] = params_grid.cv_results_['mean_test_score']
         df.to_csv(store_params_to, sep='\t', index=False)
+
+
+def test(data, model_path, store_scores_to=None, store_predictions_to=None):
+    print('**Using model from {}'.format(model_path.split('/')[-1]))
+
+    data = pd.read_csv(data, delimiter='\t')
+    model = load_pickle(model_path)
+
+    predictions = model.predict(data['tweets'])
+
+    accuracy = accuracy_score(data['label'], predictions)
+    precision = precision_score(data['label'], predictions)
+    recall = recall_score(data['label'], predictions)
+    f1 = f1_score(data['label'], predictions)
+    best_model_params = model.best_params_
+
+    print('Accuracy:\t{:.4f}'.format(accuracy))
+    print('Precision:\t{:.4f}'.format(precision))
+    print('Recall:\t\t{:.4f}'.format(recall))
+    print('F1:\t\t{:.4f}'.format(f1))
+
+    if store_scores_to is not None:
+        try:
+            df = pd.read_csv(store_scores_to, sep='\t')
+        except FileNotFoundError:
+            df = pd.DataFrame(
+                columns=['model', 'accuracy', 'precision', 'recall', 'f1', 'params']
+                )
+        except Exception as e:
+            raise e
+        finally:
+            df = df.append({
+                'model': model_path.split('/')[-1],
+                'accuracy': accuracy,
+                'precision': precision,
+                'recall': recall,
+                'f1': f1,
+                'params': best_model_params,
+            }, ignore_index=True)
+            df.to_csv(store_scores_to, sep='\t', index=False)
+
+    if store_predictions_to is not None:
+        try:
+            df = pd.read_csv(store_predictions_to, sep='\t')
+            df[model_path.split('/')[-1]] = predictions
+        except FileNotFoundError:
+            df = pd.DataFrame()
+            df['predictions'] = predictions
+        except Exception as e:
+            raise e
+        finally:
+            df.to_csv(store_predictions_to, sep='\t', index=False)
