@@ -6,7 +6,7 @@ def parse_args():
     parser.add_argument('--dataset', type=str, default='pan21', choices=['pan21'], help='pan21')
     parser.add_argument('--lang', type=str, default='en', choices=['en', 'es'], help='en (english) or es (spanish)')
     parser.add_argument('--representation', '-r', type=str, default='tf-idf', choices=['tf-idf', 'count'] , help='representation')
-    parser.add_argument('--classifier', '-c', type=str, default='lr', choices=['lr', 'svm', 'nb', 'rf'] , help='classifier')
+    parser.add_argument('--classifier', '-c', type=str, default='lr', choices=['lr', 'svm', 'nb', 'rf', 'xgb'] , help='classifier')
     parser.add_argument('--output_dir', '-o', type=str, default='outputs/baselines/', help='output directory')
     parser.add_argument('--mode', type=str, default='train', choices=['train', 'test'], help='train or test')
     return parser.parse_args()

@@ -10,6 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
 
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
@@ -26,7 +27,7 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
     ALLOWED_REP = ['tf-idf', 'count']
     assert rep in ALLOWED_REP, 'Representation must be from {}'.format(str(ALLOWED_REP))
 
-    ALLOWED_CLS = ['lr', 'svm', 'nb', 'rf']
+    ALLOWED_CLS = ['lr', 'svm', 'nb', 'rf', 'xgb']
     assert cls in ALLOWED_CLS, 'Classifier must be from {}'.format(str(ALLOWED_CLS))
 
     df = pd.read_csv(data, delimiter='\t')
@@ -124,6 +125,22 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
             'rf__max_features': ['auto'], # ['auto', 'sqrt', 'log2', None]
             'rf__bootstrap': [True], # [True, False]
             'rf__oob_score': [True], # [True, False]
+        })
+
+    elif cls == 'xgb':
+        pipeline.append(('xgb', XGBClassifier(
+                                    use_label_encoder=False,
+                                    verbosity=0,
+                                    random_state=42,
+                                    )
+                        ))
+
+        parameters.update({
+            'xgb__n_estimators': [50, 100, 200, 500],
+            'xgb__max_depth': [3, 5, 7, 10],
+            'xgb__eta': [0.01, 0.1, 0.3],
+            "xgb__subsample": [0.6, 0.7, 0.8],
+            "xgb__colsample_bytree":[0.6, 0.7, 0.8],
         })
 
 
