@@ -1,10 +1,15 @@
 import pandas as pd
 import pickle
 import time
+import numpy as np
 
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
@@ -17,8 +22,12 @@ def save_pickle(obj, filename):
 def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=None):
     rep = rep.lower()
     cls = cls.lower()
-    assert rep in ['tf-idf', 'count'], 'Representation must be either tf-idf or count'
-    assert cls in ['lr', 'svm'], 'Classifier must be either lr or svm'
+
+    ALLOWED_REP = ['tf-idf', 'count']
+    assert rep in ALLOWED_REP, 'Representation must be from {}'.format(str(ALLOWED_REP))
+
+    ALLOWED_CLS = ['lr', 'svm', 'nb', 'rf']
+    assert cls in ALLOWED_CLS, 'Classifier must be from {}'.format(str(ALLOWED_CLS))
 
     df = pd.read_csv(data, delimiter='\t')
 
@@ -33,12 +42,33 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
                         ))
 
         parameters.update({
-            'vect__ngram_range': [(1,1), (1,2), (2,2)],
-            'vect__min_df': [2, 3, 4, 5, 6, 7, 8, 9, 10],
+            'vect__ngram_range': 
+                                    [(1,1), (1,2), (2,2)] if cls in ['lr', 'svm', 'nb', 'rf'] 
+                                    else [(1,1), (1,2)] ,
+            'vect__min_df': 
+                                    [2, 3, 5, 7, 10] if cls in ['lr', 'svm', 'nb', 'rf']
+                                    else [2, 5, 10],
+            'vect__max_df': 
+                                    [0.75, 1.0],
         })
 
     elif rep == 'count':
-        pass
+        pipeline.append(('vect', CountVectorizer(
+                                        token_pattern=r'[^\s]+',
+                                        )
+                        ))
+
+        parameters.update({
+            'vect__ngram_range': 
+                                    [(1,1), (1,2), (2,2)] if cls in ['lr', 'svm', 'nb', 'rf'] 
+                                    else [(1,1), (1,2)] ,
+            'vect__min_df': 
+                                    [2, 3, 5, 7, 10] if cls in ['lr', 'svm', 'nb', 'rf']
+                                    else [2, 5, 10],
+            'vect__max_df': 
+                                    [0.75, 1.0],
+        })
+    
 
     if cls == 'lr':
         pipeline.append(('lr', LogisticRegression(
@@ -57,7 +87,44 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
         # TODO: try out elasticnet + saga ?
 
     elif cls == 'svm':
-        pass
+        pipeline.append(('svm', SVC(
+                                    # probability = True,
+                                    verbose=0,
+                                    max_iter=10000,
+                                    random_state=42,
+                                    )
+                        ))
+
+        parameters.update({
+            'svm__C': [.1, .5, 1, 2, 5, 10, 50],
+            'svm__kernel': ['linear', 'rbf'], # ['rbf', 'linear', 'poly', 'sigmoid']
+            # 'svm__gamma': [0.001, 0.01, 0.1, 1, 10, 100],
+        })
+
+    elif cls == 'nb':
+        pipeline.append(('nb', MultinomialNB(
+                                    )
+                        ))
+
+        parameters.update({
+            'nb__alpha': [0.1, 0.5, 1, 2, 5, 10, 50],
+        })
+    
+    elif cls == 'rf':
+        pipeline.append(('rf', RandomForestClassifier(
+                                    verbose=0,
+                                    random_state=42,
+                                    )
+                        ))
+
+        parameters.update({
+            'rf__n_estimators': [20, 50, 100, 200, 500],
+            'rf__max_depth': [None, 5, 10, 50, 100],
+            'rf__min_samples_leaf':  [1, 2, 4],
+            'rf__max_features': ['auto'], # ['auto', 'sqrt', 'log2', None]
+            'rf__bootstrap': [True], # [True, False]
+            'rf__oob_score': [True], # [True, False]
+        })
 
 
     pipeline = Pipeline(pipeline)
