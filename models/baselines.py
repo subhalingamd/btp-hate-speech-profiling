@@ -11,6 +11,7 @@ from sklearn.svm import SVC
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
+import lightgbm as lgb
 
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
@@ -33,7 +34,7 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
     ALLOWED_REP = ['tf-idf', 'count']
     assert rep in ALLOWED_REP, 'Representation must be from {}'.format(str(ALLOWED_REP))
 
-    ALLOWED_CLS = ['lr', 'svm', 'nb', 'rf', 'xgb']
+    ALLOWED_CLS = ['lr', 'svm', 'nb', 'rf', 'xgb', 'lgb']
     assert cls in ALLOWED_CLS, 'Classifier must be from {}'.format(str(ALLOWED_CLS))
 
     df = pd.read_csv(data, delimiter='\t')
@@ -147,6 +148,28 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
             'xgb__eta': [0.01, 0.1, 0.3],
             "xgb__subsample": [0.6, 0.7, 0.8],
             "xgb__colsample_bytree":[0.6, 0.7, 0.8],
+
+    elif cls == 'lgb':
+        pipeline.append(('lgb', lgb.LGBMClassifier(
+                                    objective = 'binary',
+                                    verbose=0,
+                                    random_state=42,
+                                    deterministic=True,
+                                    early_stopping_rounds=200,
+                                    )
+                        ))
+
+        parameters.update({
+            'lgb__boosting_type' : ['dart', 'gbdt'], # dart is good
+            'lgb__n_estimators': [50, 100, 200],
+            'lgb__learning_rate': [0.05, 0.1, 0.3],
+
+            'lgb__subsample': [0.6, 0.8], # try -> [0.6, 0.8, 1.0]
+
+            'lgb__colsample_bytree' : [0.6, 0.8], # try -> [0.6, 0.8, 1.0]
+            # 'lgb__l1_regularization' : [1,1.2],
+            # 'lgb__l2_regularization' : [1,1.2,1.4],
+            # 'lgb__num_leaves': [6, 8, 10,12, 16], # large num_leaves helps improve accuracy but might lead to over-fitting
         })
 
 
