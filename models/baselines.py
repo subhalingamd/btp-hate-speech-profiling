@@ -28,6 +28,9 @@ def load_pickle(filename):
         return pickle.load(f)
 
 def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=None):
+    """
+    Train a model on a given data set for a given representation and classifier.
+    """
     rep = rep.lower()
     cls = cls.lower()
 
@@ -37,6 +40,8 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
     ALLOWED_CLS = ['lr', 'svm', 'nb', 'rf', 'xgb', 'lgb']
     assert cls in ALLOWED_CLS, 'Classifier must be from {}'.format(str(ALLOWED_CLS))
 
+    print('**Training model with {} representation and {} classifier**'.format(rep, cls))
+    
     df = pd.read_csv(data, delimiter='\t')
 
     pipeline, parameters = [], {}
@@ -201,6 +206,9 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
 
 
 def test(data, model_path, store_scores_to=None, store_predictions_to=None):
+    """
+    Test a model on a given data set.
+    """
     print('**Using model from {}'.format(model_path.split('/')[-1]))
 
     data = pd.read_csv(data, delimiter='\t')
