@@ -89,8 +89,8 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
 
         parameters.update({
             'lr__C': [.1, .2, .5, 1, 2, 5, 10, 20, 50, 100],
-            'lr__penalty': ['l2'], # ['l1', 'l2']
-            'lr__solver': ['saga'], # ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga']
+            'lr__penalty': ['l1', 'l2'],
+            'lr__solver': ['liblinear', 'saga'], # ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga']
         })
         # TODO: try out elasticnet + saga ?
 
@@ -115,7 +115,7 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
                         ))
 
         parameters.update({
-            'nb__alpha': [0.1, 0.5, 1, 2, 5, 10, 50],
+            'nb__alpha': np.logspace(-5, 1, num=25),
         })
     
     elif cls == 'rf':
@@ -126,7 +126,7 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
                         ))
 
         parameters.update({
-            'rf__n_estimators': [20, 50, 100, 200, 500],
+            'rf__n_estimators': [20, 50, 100, 200, 500], # try -> [50, 100, 200, 500]
             'rf__max_depth': [None, 5, 10, 50, 100],
             'rf__min_samples_leaf':  [1, 2, 4],
             'rf__max_features': ['auto'], # ['auto', 'sqrt', 'log2', None]
@@ -143,11 +143,12 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
                         ))
 
         parameters.update({
-            'xgb__n_estimators': [50, 100, 200, 500],
-            'xgb__max_depth': [3, 5, 7, 10],
-            'xgb__eta': [0.01, 0.1, 0.3],
-            "xgb__subsample": [0.6, 0.7, 0.8],
-            "xgb__colsample_bytree":[0.6, 0.7, 0.8],
+            'xgb__n_estimators': [100, 200, 300],
+            'xgb__max_depth': [3, 5, 7],
+            'xgb__eta': [0.05, 0.1, 0.3],
+            "xgb__subsample": [0.6, 0.8], # try -> [0.6, 0.8, 1.0]
+            "xgb__colsample_bytree": [0.6, 0.8], # try -> [0.6, 0.8, 1.0]
+        })
 
     elif cls == 'lgb':
         pipeline.append(('lgb', lgb.LGBMClassifier(
