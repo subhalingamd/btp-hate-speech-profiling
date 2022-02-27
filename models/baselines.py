@@ -205,7 +205,7 @@ def train(data, rep='tf-idf', cls='lr', dump_objects_to=None, store_params_to=No
         df.to_csv(store_params_to, sep='\t', index=False)
 
 
-def test(data, model_path, store_scores_to=None, store_predictions_to=None):
+def test(data, model_path, store_scores_to=None, store_predictions_to=None, include_all_params=True):
     """
     Test a model on a given data set.
     """
@@ -232,7 +232,7 @@ def test(data, model_path, store_scores_to=None, store_predictions_to=None):
             df = pd.read_csv(store_scores_to, sep='\t')
         except FileNotFoundError:
             df = pd.DataFrame(
-                columns=['model', 'accuracy', 'precision', 'recall', 'f1', 'params']
+                columns=['model', 'accuracy', 'precision', 'recall', 'f1', 'best_params'] + (['all_params'] if include_all_params else [])
                 )
         except Exception as e:
             raise e
@@ -243,8 +243,17 @@ def test(data, model_path, store_scores_to=None, store_predictions_to=None):
                 'precision': precision,
                 'recall': recall,
                 'f1': f1,
-                'params': best_model_params,
+                'best_params': str(best_model_params),
             }, ignore_index=True)
+
+            if include_all_params:
+                x = pd.DataFrame(model.cv_results_["params"])
+                df.iloc[-1, df.columns.get_loc('all_params')] = str({
+                                            col: x[col].unique().tolist()
+                                                for col in x.columns
+                                        })
+
+
             df.to_csv(store_scores_to, sep='\t', index=False)
 
     if store_predictions_to is not None:
@@ -258,3 +267,11 @@ def test(data, model_path, store_scores_to=None, store_predictions_to=None):
             raise e
         finally:
             df.to_csv(store_predictions_to, sep='\t', index=False)
+    
+    return {
+        'accuracy': accuracy,
+        'precision': precision,
+        'recall': recall,
+        'f1': f1,
+        'params': best_model_params,
+    }
