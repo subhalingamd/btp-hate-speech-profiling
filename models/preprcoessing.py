@@ -15,19 +15,24 @@ def emoji_handler(text):
     text = demoji.replace(text, repl="##EMOJI##")
     return text
 
+def clean_tweet(tweet):
+    tweet = emoji_handler(tweet)
+    tweet = tweet.lower()
+    tweet = re.sub('[,.\'\"\‘\’\”\“]', '', tweet)
+    # tweet = re.sub(r'([a-z\'-\’]+)', r'\1 ', tweet)
+    # tweet = re.sub(r'(?<![?!:;/])([:\'\";.,?()/!])(?= )','',tweet)
+    tweet = re.sub(r'([a-z0-9\'-\’\s\#]+)', r'\1 ', tweet)
+    tweet = re.sub(r'#(#rt#|#emoji#|user|hashtag|url)#', r' #\1# ', tweet)
+    tweet = re.sub(r'(?<![?!:;/])([:\'\";.,?()/!])(?= )','',tweet)
+    tweet = re.sub(r'\s+', ' ', tweet)
+    tweet = re.sub('[\n]', ' ', tweet)
+    tweet = tweet.strip()
+    return tweet
+
 def clean_tweets(tweets):
     cleaned_tweets = []
     for tweet in tweets:
-        tweet = emoji_handler(tweet)
-        tweet = tweet.lower()
-        tweet = re.sub('[,.\'\"\‘\’\”\“]', '', tweet)
-        # tweet = re.sub(r'([a-z\'-\’]+)', r'\1 ', tweet)
-        # tweet = re.sub(r'(?<![?!:;/])([:\'\";.,?()/!])(?= )','',tweet)
-        tweet = re.sub(r'([a-z0-9\'-\’\s\#]+)', r'\1 ', tweet)
-        tweet = re.sub(r'#(#rt#|#emoji#|user|hashtag|url)#', r' #\1# ', tweet)
-        tweet = re.sub(r'(?<![?!:;/])([:\'\";.,?()/!])(?= )','',tweet)
-        tweet = re.sub(r'\s+', ' ', tweet)
-        tweet = re.sub('[\n]', ' ', tweet)
+        tweet = clean_tweet(tweet)
         cleaned_tweets.append(tweet)
     return cleaned_tweets
 
@@ -54,3 +59,22 @@ def preprocess_tweets(data, num_tweets=200, merge_tweets=False):
 def preprocess_data_and_save(data, file_name, sep='\t', num_tweets=200, merge_tweets=False):
     preprocessed_data = preprocess_tweets(data, num_tweets=num_tweets, merge_tweets=merge_tweets)
     to_csv(preprocessed_data, file_name, sep=sep)
+
+
+# Given a csv file with label, perform random undersampling of the majority class
+
+
+def undersample(df, label_col, sampler='random', sampling_strategy=1.0, random_state=42):
+    assert sampler in ['random', ], "Sampler must be 'random'"
+    print(df[label_col].value_counts())
+    assert df[label_col].isin([0, 1]).all(), f'Label column ({label_col}) must be binary'
+
+    print("Original dataset shape: {}".format(df.shape))
+    if sampler == 'random':
+        from imblearn.under_sampling import RandomUnderSampler
+        sampler = RandomUnderSampler(sampling_strategy=sampling_strategy, random_state=random_state)
+    
+    df, _ = sampler.fit_resample(df, df[label_col])
+    print("Undersampled dataset shape: {}".format(df.shape))
+
+    return df
