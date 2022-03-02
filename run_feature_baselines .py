@@ -17,7 +17,7 @@ if __name__ == '__main__':
     args = parse_args()
     
     if args.mode == 'train':
-        if "test" in args.merged_data:
+        if "test" in args.features_data:
             raise ValueError("Using test data for training is not allowed.")
         args.output_dir = args.output_dir.rstrip('/')
         out_prefix = "{}/{}_{}_{}_{}".format(args.output_dir, args.dataset, args.lang, args.representation, args.classifier)
