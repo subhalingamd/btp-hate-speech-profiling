@@ -5,7 +5,7 @@ def parse_args():
     parser.add_argument('--data_path', '-d', type=str, default='inputs/tweets/hs+hateval2019_en_train__processed.tsv', help='data path')
     parser.add_argument('--classifier', '-c', type=str, default='lr', choices=['lr', 'svm', 'nb', 'rf', ], help='classifier')
     parser.add_argument('--output_dir', '-o', type=str, default='outputs/feature_baselines_tweets/hs+hateval2019', help='output directory')
-    parser.add_argument('--best_metrics_file', '-b', type=str, default='outputs/feature_baselines_tweets/hs+hateval2019/best_metrics.tsv', help='best metrics file')
+
     parser.add_argument('--model_path', '-m', type=str, default='outputs/feature_baselines_tweets/hs+hateval2019/rf.pkl', help='saved model path')
     parser.add_argument('--mode', type=str, default='train', choices=['train', 'test'], help='train or test')
     return parser.parse_args()
@@ -13,6 +13,10 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
+    print('*' * 32)
+    print(args)
+    print('*' * 32)
+    print("\n")
     
     if args.mode == 'train':
         if "test" in args.data_path:
