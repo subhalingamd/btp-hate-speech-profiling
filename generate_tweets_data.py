@@ -4,12 +4,19 @@ from sklearn.model_selection import train_test_split
 tweet_col = 'text'
 label_col = 'HS'
 
-dataset = 'hateval2019'
-assert dataset in ('hateval2019', 'hs')
+dataset = 'hateval2019:val'
+assert dataset in ('hateval2019:train', 'hateval2019:val', 'hateval2019:test', 'hs')
 
-if dataset == 'hateval2019':
+if dataset.startswith('hateval2019'):
     from preprocessing.hateval2019 import read_dataset
-    path = './data/hateval2019/hateval2019_en_test.csv'
+    if dataset.endswith('train'):
+        path = './data/hateval2019/hateval2019_en_train.csv'
+    elif dataset.endswith('val'):
+        path = './data/hateval2019/hateval2019_en_dev.csv'
+    elif dataset.endswith('test'):
+        path = './data/hateval2019/hateval2019_en_test.csv'
+    else:
+        raise ValueError('dataset should be one of (train, val, test)')
     data = read_dataset(path)
 
 elif dataset == 'hs':
@@ -70,7 +77,7 @@ data['NER_PER'], data['NER_ORG'], data['NER_LOC'], data['NER_MISC'] = zip(*data[
 
 # ## Save features
 
-if dataset == 'hateval2019':
+if dataset.startswith('hateval2019'):
     data[[
         label_col, tweet_col,
         'hashtags', 'urls', 'users', 'rt', 
@@ -78,7 +85,7 @@ if dataset == 'hateval2019':
         'stopwords', 'emojis',
         'sentiment_negative', 'sentiment_neutral', 'sentiment_positive', # 'sentiment',
         'NER_PER', 'NER_ORG', 'NER_LOC', 'NER_MISC'
-    ]].to_csv('./inputs/tweets/hateval2019_en_test_.tsv', sep='\t', index=False)
+    ]].to_csv(f'./inputs/tweets/hateval2019_en_{dataset.split(":")[-1]}_.tsv', sep='\t', index=False)
 
 elif dataset == 'hs':
     data_train, data_test = train_test_split(data, test_size=0.25, random_state=42, shuffle=True, stratify=data[label_col])
