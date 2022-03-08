@@ -7,6 +7,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+import lightgbm as lgb
 
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
@@ -36,7 +38,7 @@ def train(data, cls='lr', dump_objects_to=None, store_params_to=None):
     Train a model on a given data set for a given representation and classifier.
     """
     cls = cls.lower()
-    ALLOWED_CLS = ['lr', 'svm', 'nb', 'rf',]
+    ALLOWED_CLS = ['lr', 'svm', 'nb', 'rf', 'xgb', 'lgb']
     assert cls in ALLOWED_CLS, 'Classifier must be from {}'.format(str(ALLOWED_CLS))
 
     print('**Training model with {} classifier**'.format(cls))    
@@ -99,6 +101,45 @@ def train(data, cls='lr', dump_objects_to=None, store_params_to=None):
             'rf__max_features': ['auto'], # ['auto', 'sqrt', 'log2', None]
             'rf__bootstrap': [True], # [True, False]
             'rf__oob_score': [True], # [True, False]
+        })
+
+    elif cls == 'xgb':
+        pipeline.append(('xgb', XGBClassifier(
+                                    use_label_encoder=False,
+                                    verbosity=0,
+                                    random_state=42,
+                                    )
+                        ))
+
+        parameters.update({
+            'xgb__n_estimators': [100, 200, 300],
+            'xgb__max_depth': [3, 5, 7],
+            'xgb__eta': [0.05, 0.1, 0.3],
+            "xgb__subsample": [0.6, 0.8, 1.0],
+            "xgb__colsample_bytree": [0.6, 0.8, 1.0],
+        })
+
+    elif cls == 'lgb':
+        pipeline.append(('lgb', lgb.LGBMClassifier(
+                                    objective = 'binary',
+                                    verbose=0,
+                                    random_state=42,
+                                    deterministic=True,
+                                    early_stopping_rounds=200,
+                                    )
+                        ))
+
+        parameters.update({
+            'lgb__boosting_type' : ['dart', 'gbdt'], # dart is good
+            'lgb__n_estimators': [50, 100, 200],
+            'lgb__learning_rate': [0.05, 0.1, 0.3],
+
+            'lgb__subsample': [0.6, 0.8, 1.0],
+
+            'lgb__colsample_bytree' : [0.6, 0.8, 1.0],
+            # 'lgb__l1_regularization' : [1,1.2],
+            # 'lgb__l2_regularization' : [1,1.2,1.4],
+            # 'lgb__num_leaves': [6, 8, 10,12, 16], # large num_leaves helps improve accuracy but might lead to over-fitting
         })
 
 

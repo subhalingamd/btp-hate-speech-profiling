@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 def parse_args():
     parser = ArgumentParser(description='Running baselines')
     parser.add_argument('--data_path', '-d', type=str, default='inputs/tweets/hs+hateval2019_en_train__processed.tsv', help='data path')
-    parser.add_argument('--classifier', '-c', type=str, default='lr', choices=['lr', 'svm', 'nb', 'rf', ], help='classifier')
+    parser.add_argument('--classifier', '-c', type=str, default='lr', choices=['lr', 'svm', 'nb', 'rf', 'xgb', 'lgb'], help='classifier')
     parser.add_argument('--output_dir', '-o', type=str, default='outputs/feature_baselines_tweets/hs+hateval2019', help='output directory')
 
     parser.add_argument('--model_path', '-m', type=str, default='outputs/feature_baselines_tweets/hs+hateval2019/rf.pkl', help='saved model path')
