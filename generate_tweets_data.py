@@ -4,20 +4,25 @@ from sklearn.model_selection import train_test_split
 tweet_col = 'text'
 label_col = 'HS'
 
-dataset = 'hateval2019:val'
-assert dataset in ('hateval2019:train', 'hateval2019:val', 'hateval2019:test', 'hs')
+dataset = 'hateval2019:train+val'
+assert dataset in ('hateval2019:train', 'hateval2019:val', 'hateval2019:train+val', 'hateval2019:test', 'hs')
 
 if dataset.startswith('hateval2019'):
     from preprocessing.hateval2019 import read_dataset
-    if dataset.endswith('train'):
-        path = './data/hateval2019/hateval2019_en_train.csv'
-    elif dataset.endswith('val'):
-        path = './data/hateval2019/hateval2019_en_dev.csv'
-    elif dataset.endswith('test'):
-        path = './data/hateval2019/hateval2019_en_test.csv'
+    if dataset.endswith('train+val'):
+        train = read_dataset('./data/hateval2019/hateval2019_en_train.csv')
+        val = read_dataset('./data/hateval2019/hateval2019_en_dev.csv')
+        data = pd.concat([train, val])
     else:
-        raise ValueError('dataset should be one of (train, val, test)')
-    data = read_dataset(path)
+        if dataset.endswith('train'):
+            path = './data/hateval2019/hateval2019_en_train.csv'
+        elif dataset.endswith('val'):
+            path = './data/hateval2019/hateval2019_en_dev.csv'
+        elif dataset.endswith('test'):
+            path = './data/hateval2019/hateval2019_en_test.csv'
+        else:
+            raise ValueError('dataset should be one of (train, val, test)')
+        data = read_dataset(path)
 
 elif dataset == 'hs':
     from preprocessing.hs import read_dataset
