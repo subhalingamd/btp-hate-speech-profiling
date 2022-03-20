@@ -179,11 +179,19 @@ def test(data, model_path, store_scores_to=None, store_predictions_to=None, incl
     print('**Using model from {}'.format(model_path.split('/')[-1]))
 
     data = pd.read_csv(data, delimiter='\t', usecols=_cols)
-    model = load_pickle(model_path)
+    
+    predictions = [0 for _ in range(len(data[_label_col]))]
+    for model_path_ in model_path:
+        model = load_pickle(model_path_)
 
-    predictions = model.predict(
-        data[[f for f in data.columns if f not in [_label_col, 'id']]],
-    )
+        predictions_ = model.predict(
+            data[[f for f in data.columns if f not in [_label_col, 'id']]],
+        )
+        predictions = [predictions[i] + predictions_[i] for i in range(len(predictions))]
+
+    predictions = [predictions[i] / len(model_path) for i in range(len(predictions))]
+    predictions = [1 if p >= 0.5 else 0 for p in predictions]
+
 
     accuracy = accuracy_score(data[_label_col], predictions)
     precision = precision_score(data[_label_col], predictions)
