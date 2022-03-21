@@ -36,7 +36,7 @@ def clean_tweets(tweets):
         cleaned_tweets.append(tweet)
     return cleaned_tweets
 
-def preprocess_tweets(data, num_tweets=200, merge_tweets=False):
+def preprocess_tweets(data, num_tweets=200, merge_tweets=False, no_clean=False):
     if merge_tweets:
         preprocessed_tweets = {"tweets": [], "label": []}
     else:
@@ -45,7 +45,10 @@ def preprocess_tweets(data, num_tweets=200, merge_tweets=False):
     for label, users in data.items():
         for user in tqdm(users):
             assert len(user) == num_tweets, "Number of tweets for a user is not {}".format(num_tweets)
-            cleaned_tweets = clean_tweets(user)
+            if no_clean is True:
+                cleaned_tweets = user.copy()
+            else:
+                cleaned_tweets = clean_tweets(user)
             preprocessed_tweets["label"].append(label)
             if merge_tweets:
                 preprocessed_tweets["tweets"].append(
@@ -56,8 +59,8 @@ def preprocess_tweets(data, num_tweets=200, merge_tweets=False):
                     preprocessed_tweets["tweet_{}".format(num+1)].append(tweet)
     return preprocessed_tweets
 
-def preprocess_data_and_save(data, file_name, sep='\t', num_tweets=200, merge_tweets=False):
-    preprocessed_data = preprocess_tweets(data, num_tweets=num_tweets, merge_tweets=merge_tweets)
+def preprocess_data_and_save(data, file_name, sep='\t', num_tweets=200, merge_tweets=False, no_clean=False):
+    preprocessed_data = preprocess_tweets(data, num_tweets=num_tweets, merge_tweets=merge_tweets, no_clean=no_clean)
     to_csv(preprocessed_data, file_name, sep=sep)
 
 
