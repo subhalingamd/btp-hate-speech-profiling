@@ -4,9 +4,9 @@ from sklearn.model_selection import train_test_split
 tweet_col = 'text'
 label_col = 'HS'
 
-dataset = 'hateval2019:train+val'
-assert dataset in ('hateval2019:train', 'hateval2019:val', 'hateval2019:train+val', 'hateval2019:test', 'hs')
-
+dataset = 'pan21:test'
+assert dataset in ('hateval2019:train', 'hateval2019:val', 'hateval2019:train+val', 'hateval2019:test', 'hs', 'pan21:train', 'pan21:test')
+    
 if dataset.startswith('hateval2019'):
     from preprocessing.hateval2019 import read_dataset
     if dataset.endswith('train+val'):
@@ -43,6 +43,20 @@ elif dataset == 'hs':
     df2[label_col] = 1
 
     data = pd.concat([df0, df1, df2])
+
+elif dataset.startswith('pan21'):
+    if dataset.endswith('train'):
+        path = 'inputs/data_pan21_train_en_raw.tsv'
+    elif dataset.endswith('test'):
+        path = 'inputs/data_pan21_test_en_raw.tsv'
+    else:
+        raise ValueError('dataset should be one of (train, test)')
+    tweet_cols = [f'tweet_{i+1}' for i in range(200)]
+    data = pd.read_csv(path, sep='\t')
+    data = pd.DataFrame([
+        [idx, row[col], row['label']] for idx, row in data.iterrows() for col in tweet_cols
+        ], columns=['id', tweet_col, label_col]
+    )
 
 else:
     raise ValueError('dataset not supported')
@@ -112,3 +126,14 @@ elif dataset == 'hs':
         'sentiment_negative', 'sentiment_neutral', 'sentiment_positive', # 'sentiment',
         'NER_PER', 'NER_ORG', 'NER_LOC', 'NER_MISC'
     ]].to_csv('./inputs/tweets/hs_en_test_.tsv', sep='\t', index=False)
+
+elif dataset.startswith('pan21'):
+    data[[
+        'id',
+        label_col, tweet_col,
+        'hashtags', 'urls', 'users', 'rt', 
+        'uppercase_chars', 'chars', 'uppercase_words', 'words', 
+        'stopwords', 'emojis',
+        'sentiment_negative', 'sentiment_neutral', 'sentiment_positive', # 'sentiment',
+        'NER_PER', 'NER_ORG', 'NER_LOC', 'NER_MISC'
+    ]].to_csv(f'./inputs/tweets/pan21_en_{dataset.split(":")[-1]}_.tsv', sep='\t', index=False)
