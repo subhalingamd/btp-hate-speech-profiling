@@ -6,8 +6,9 @@ def parse_args():
     parser.add_argument('--classifier', '-c', type=str, default='lr', choices=['lr', 'svm', 'nb', 'rf', 'xgb', 'lgb'], help='classifier')
     parser.add_argument('--output_dir', '-o', type=str, default='outputs/feature_baselines_tweets/hs+hateval2019', help='output directory')
 
-    parser.add_argument('--model_path', '-m', type=str, default='outputs/feature_baselines_tweets/hs+hateval2019/rf.pkl', help='saved model path')
+    parser.add_argument('--model_path', '-m', type=str, nargs='+', default=['outputs/feature_baselines_tweets/hs+hateval2019/rf.pkl'], help='saved model path')
     parser.add_argument('--mode', type=str, default='train', choices=['train', 'test'], help='train or test')
+    parser.add_argument('--return_proba', action='store_true', default=False, help='return probability')
     return parser.parse_args()
 
 
@@ -31,4 +32,4 @@ if __name__ == '__main__':
             raise ValueError("Using train data for testing is not allowed.")
         out_prefix = "{}/test_".format(args.output_dir)
         from models.tweets.feature_baselines import test
-        test(data=args.data_path, model_path=args.model_path, store_scores_to=out_prefix+'scores.tsv', store_predictions_to=None, include_all_params=True)
+        test(data=args.data_path, model_path=args.model_path, store_scores_to=out_prefix+'scores.tsv', store_predictions_to=out_prefix+'predictions.tsv', include_all_params=True, return_proba=args.return_proba)
