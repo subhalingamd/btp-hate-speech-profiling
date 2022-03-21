@@ -172,11 +172,11 @@ def train(data, cls='lr', dump_objects_to=None, store_params_to=None):
         df.to_csv(store_params_to, sep='\t', index=False)
 
 
-def test(data, model_path, store_scores_to=None, store_predictions_to=None, include_all_params=True):
+def test(data, model_path, store_scores_to=None, store_predictions_to=None, include_all_params=True, return_proba=False):
     """
     Test a model on a given data set.
     """
-    print('**Using model from {}'.format(model_path.split('/')[-1]))
+    print('**Using model from {}'.format([m.split('/')[-1] for m in model_path]))
 
     data = pd.read_csv(data, delimiter='\t', usecols=_cols)
     
@@ -184,9 +184,13 @@ def test(data, model_path, store_scores_to=None, store_predictions_to=None, incl
     for model_path_ in model_path:
         model = load_pickle(model_path_)
 
-        predictions_ = model.predict(
-            data[[f for f in data.columns if f not in [_label_col, 'id']]],
-        )
+        if return_proba == True:
+            predictions += model.predict_proba(data[[f for f in data.columns if f not in [_label_col, 'id']]])[:,1]
+        else:
+            predictions_ = model.predict(
+                data[[f for f in data.columns if f not in [_label_col, 'id']]],
+            )
+
         predictions = [predictions[i] + predictions_[i] for i in range(len(predictions))]
 
     predictions = [predictions[i] / len(model_path) for i in range(len(predictions))]
@@ -215,7 +219,7 @@ def test(data, model_path, store_scores_to=None, store_predictions_to=None, incl
             raise e
         finally:
             df = df.append({
-                'model': model_path.split('/')[-1],
+                'model': [m.split('/')[-1] for m in model_path],
                 'accuracy': accuracy,
                 'precision': precision,
                 'recall': recall,
@@ -236,11 +240,11 @@ def test(data, model_path, store_scores_to=None, store_predictions_to=None, incl
     if store_predictions_to is not None:
         try:
             df = pd.read_csv(store_predictions_to, sep='\t')
-            df[model_path.split('/')[-1]] = predictions
+            df[str([m.split('/')[-1] for m in model_path])] = predictions
         except FileNotFoundError:
             df = pd.DataFrame()
             df['gold'] = data[_label_col]
-            df[model_path.split('/')[-1]] = predictions
+            df[str([m.split('/')[-1] for m in model_path])] = predictions
         except Exception as e:
             raise e
         finally:
