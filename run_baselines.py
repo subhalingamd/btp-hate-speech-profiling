@@ -30,4 +30,4 @@ if __name__ == '__main__':
             raise ValueError("Using train data for testing is not allowed.")
         out_prefix = "{}/{}_{}_test_".format(args.output_dir, args.dataset, args.lang)
         from models.baselines import test
-        test(data=args.merged_data, model_path=args.model_path, store_scores_to=out_prefix+'scores.tsv', store_predictions_to=None, include_all_params=True)
+        test(data=args.merged_data, model_path=args.model_path, store_scores_to=out_prefix+'scores.tsv', store_predictions_to=out_prefix+'predictions.tsv', include_all_params=True)
