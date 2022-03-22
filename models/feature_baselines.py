@@ -223,7 +223,8 @@ def test(data, model_path, store_scores_to=None, store_predictions_to=None, incl
             df[model_path.split('/')[-1]] = predictions
         except FileNotFoundError:
             df = pd.DataFrame()
-            df['predictions'] = predictions
+            df['gold'] = data['label']
+            df[model_path.split('/')[-1]] = predictions
         except Exception as e:
             raise e
         finally:
